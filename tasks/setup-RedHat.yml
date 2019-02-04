@@ -9,15 +9,18 @@
     nodejs_rhel_rpm_dir: "pub"
   when: nodejs_version == '0.10'
 
-- name: Import Nodesource RPM key.
-  rpm_key:
-    key: https://rpm.nodesource.com/pub/el/NODESOURCE-GPG-SIGNING-KEY-EL
-    state: present
+- name: Define repo path when custom is not defined
+  set_fact:
+    nodejs_repo_url: "https://rpm.nodesource.com/{{ nodejs_rhel_rpm_dir }}/el/{{ ansible_distribution_major_version }}/{{ ansible_architecture }}/nodesource-release-el{{ ansible_distribution_major_version }}-1.noarch.rpm"
+  when: nodejs_repo_url is not defined
 
 - name: Add Nodesource repositories for Node.js.
   yum:
-    name: "https://rpm.nodesource.com/{{ nodejs_rhel_rpm_dir }}/el/{{ ansible_distribution_major_version }}/{{ ansible_architecture }}/nodesource-release-el{{ ansible_distribution_major_version }}-1.noarch.rpm"
+    name: "{{ nodejs_repo_url }}"
     state: present
 
 - name: Ensure Node.js and npm are installed.
-  yum: "name=nodejs-{{ nodejs_version[0] }}.* state=present enablerepo='epel,nodesource'"
+  yum:
+    name: nodejs
+    state: present
+    enablerepo: 'epel,nodesource'
